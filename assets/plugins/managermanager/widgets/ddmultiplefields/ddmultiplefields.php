@@ -61,7 +61,7 @@ function mm_ddMultipleFields($tvs = '', $roles = '', $templates = '', $columns =
 		}
 
 		$tvsMas = array();
-		// Does this page's template use any image or file or text TVs?
+		// Does this page's template use any image or file or text or textarea TVs?
 		$tvsTemp = tplUseTvs($page_template, $tvs, 'image');
 		if ($tvsTemp){
 			foreach($tvsTemp as $v){
@@ -83,6 +83,14 @@ function mm_ddMultipleFields($tvs = '', $roles = '', $templates = '', $columns =
 				array_push($tvsMas,$v);
 			}
 		}
+		$tvsTemp = tplUseTvs($page_template, $tvs, 'textarea');
+		if ($tvsTemp){
+			foreach($tvsTemp as $v){
+				$v['type'] = 'textarea';
+				array_push($tvsMas,$v);
+			}
+		}
+
 
 		if (count($tvsMas) == 0){
 			return;
