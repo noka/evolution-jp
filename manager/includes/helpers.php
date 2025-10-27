@@ -1,4 +1,7 @@
 <?php
+/**
+ * @return DocumentParser
+ */
 function evo()
 {
     global $modx;
@@ -8,11 +11,17 @@ function evo()
     return $modx;
 }
 
+/**
+ * @return DBAPI
+ */
 function db()
 {
     return evo()->db;
 }
 
+/**
+ * @return ManagerAPI
+ */
 function manager()
 {
     global $modx;
@@ -87,6 +96,9 @@ if (!function_exists('str_ends_with')) {
 function hsc($string = '', $flags = ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, $encode = null, $double_encode = true)
 {
     if(!$string) {
+        return $string;
+    }
+    if (is_object($string)) {
         return $string;
     }
     if(is_array($string)) {
@@ -220,6 +232,9 @@ function request_intvar($key)
     return 0;
 }
 
+/**
+ * @return SystemEvent
+ */
 function event()
 {
     return evo()->event;
@@ -337,21 +352,46 @@ function doc($key, $default = '')
     if (str_contains($key, '@parent')) {
         $a = evo()->getDocumentObject('id', doc('parent'));
         $key = str_replace('@parent', '', $key);
+    } elseif (str_contains($key, '@up')) {
+        $a = evo()->getDocumentObject('id', uparent());
+        $key = str_replace('@up', '', $key);
+    } elseif (str_contains($key, '@inherit')) {
+        $key = str_replace('@inherit', '', $key);
+        $a = evo()->getDocumentObject(
+            'id',
+            evo()->inheritDocId($key, docid())
+        );
     } elseif (evo()->isFrontEnd()) {
         $a = evo()->documentObject;
     } else {
         $a = $doc;
     }
-    if (str_contains($key, '|hsc')) {
-        return hsc(
-            array_get(
-                $a,
-                str_replace('|hsc', '', $key),
-                $default
-            )
+    if (strpos($key, ':') !== false) {
+        // modifierを設定
+        $modifiers = explode(':', $key);
+        $key = array_shift($modifiers);
+        $value = evo()->applyFilter(
+            array_get($a, $key, $default),
+            $key,
+            implode(':', $modifiers)
         );
     }
-    return array_get($a, $key, $default);
+    // $keyが「|」で区切られている場合は値が有効なキーを探す
+    if (strpos($key, '|') !== false) {
+        $keys = explode('|', $key);
+        foreach ($keys as $key) {
+            if (array_get($a, $key)) {
+                return array_get($a, $key, $default);
+            }
+            if (array_get($a, $key . '.value')) {
+                return array_get($a, $key . '.value', $default);
+            }
+        }
+    }
+    return is_array($a[$key])
+        ? array_get($a, $key . '.value', $default)
+        : array_get($a, $key, $default)
+    ;
 }
 
 function ob_get_include($path)

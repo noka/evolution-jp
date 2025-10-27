@@ -4,12 +4,12 @@ $chkagree = postv('chkagree', sessionv('chkagree'));
 
 if (sessionv('prevAction') === 'options') {
     $_SESSION['installdata'] = postv('installdata', '');
-    $_SESSION['template'] = postv('template', array());
-    $_SESSION['tv'] = postv('tv', array());
-    $_SESSION['chunk'] = postv('chunk', array());
-    $_SESSION['snippet'] = postv('snippet', array());
-    $_SESSION['plugin'] = postv('plugin', array());
-    $_SESSION['module'] = postv('module', array());
+    $_SESSION['template']    = postv('template', array());
+    $_SESSION['tv']          = postv('tv', array());
+    $_SESSION['chunk']       = postv('chunk', array());
+    $_SESSION['snippet']     = postv('snippet', array());
+    $_SESSION['plugin']      = postv('plugin', array());
+    $_SESSION['module']      = postv('module', array());
 }
 
 echo '<h2>' . lang('preinstall_validation') . '</h2>';
@@ -26,13 +26,6 @@ if (version_compare(phpversion(), '5.3.0') < 0) {
 }
 echo p($_ . lang('checking_php_version'));
 
-// check php register globals off
-$register_globals = (int)ini_get('register_globals');
-if ($register_globals == '1') {
-    echo p(echo_failed() . lang('checking_registerglobals'));
-    echo p('<strong>' . lang('checking_registerglobals_note') . '</strong>');
-}
-
 // check sessions
 if (sessionv('test') != 1) {
     echo p(echo_failed() . lang('checking_sessions'));
@@ -41,36 +34,36 @@ if (sessionv('test') != 1) {
 
 // check directories
 // cache exists?
-if (!is_dir(MODX_BASE_PATH . 'assets/cache')) {
+if (!is_dir(rtrim(MODX_CACHE_PATH, '/')) && !mkd(MODX_CACHE_PATH)) {
     echo p(echo_failed() . lang('checking_if_cache_exist'));
     $errors += 1;
 }
 
 // cache writable?
-if (!is_writable(MODX_BASE_PATH . 'assets/cache')) {
+if (!is_writable(rtrim(MODX_CACHE_PATH, '/'))) {
     $_ = echo_failed();
     $errors += 1;
 } else {
     $_ = echo_ok();
-    mkd(MODX_BASE_PATH . 'assets/cache/rss');
+    mkd(MODX_CACHE_PATH . 'rss');
 }
 echo p($_ . lang('checking_if_cache_writable'));
 
-if (is_writable(MODX_BASE_PATH . 'assets/cache')) {
+if (is_writable(rtrim(MODX_CACHE_PATH, '/'))) {
     // cache files writable?
-    if (!is_file(MODX_BASE_PATH . 'assets/cache/siteCache.idx.php')) {
+    if (!is_file(MODX_CACHE_PATH . 'siteCache.idx.php')) {
         // make an attempt to create the file
-        file_put_contents(MODX_BASE_PATH . 'assets/cache/siteCache.idx.php', '<?php //MODX site cache file ?>');
+        file_put_contents(MODX_CACHE_PATH . 'siteCache.idx.php', '<?php //MODX site cache file ?>');
     }
-    if (!is_writable(MODX_BASE_PATH . 'assets/cache/siteCache.idx.php')) {
-        $_ = echo_failed();
+    if (!is_writable(MODX_CACHE_PATH . 'siteCache.idx.php')) {
+        $_ =  echo_failed();
         $errors += 1;
-    } else $_ = echo_ok();
+    } else $_ =  echo_ok();
     echo p($_ . lang('checking_if_cache_file_writable'));
 
-    file_put_contents(MODX_BASE_PATH . 'assets/cache/basicConfig.php', '<?php $cacheRefreshTime=0; ?>');
+    file_put_contents(MODX_CACHE_PATH . 'basicConfig.php', '<?php $cacheRefreshTime=0; ?>');
 
-    if (!is_writable(MODX_BASE_PATH . 'assets/cache/basicConfig.php')) {
+    if (!is_writable(MODX_CACHE_PATH . 'basicConfig.php')) {
         $_ = echo_failed();
         $errors += 1;
     } else $_ = echo_ok();
@@ -85,9 +78,8 @@ if (!is_dir(MODX_BASE_PATH . 'assets/images')) {
 
     // cache writable?
     $dir_images = MODX_BASE_PATH . 'content/images';
-    $dir_files = MODX_BASE_PATH . 'content/files';
-    $dir_flash = MODX_BASE_PATH . 'content/flash';
-    $dir_media = MODX_BASE_PATH . 'content/media';
+    $dir_files  = MODX_BASE_PATH . 'content/files';
+    $dir_media  = MODX_BASE_PATH . 'content/media';
 
     if (!is_writable(MODX_BASE_PATH . 'content')) {
         $_ = echo_failed();
@@ -96,18 +88,17 @@ if (!is_dir(MODX_BASE_PATH . 'assets/images')) {
         $_ = echo_ok();
         mkd($dir_images);
         mkd($dir_files);
-        mkd($dir_flash);
         mkd($dir_media);
     }
     echo p($_ . lang('checking_if_content_writable'));
 
     if (is_writable(MODX_BASE_PATH . 'content')) {
-        if (!is_dir($dir_images) || !is_dir($dir_files) || !is_dir($dir_flash) || !is_dir($dir_media)) {
+        if (!is_dir($dir_images) || !is_dir($dir_files) || !is_dir($dir_media)) {
             echo p(echo_failed() . lang('checking_if_images_exist'));
             $errors += 1;
         } else {
             // File Browser directories writable?
-            if (!is_writable($dir_images) || !is_writable($dir_files) || !is_writable($dir_flash) || !is_writable($dir_media)) {
+            if (!is_writable($dir_images) || !is_writable($dir_files) || !is_writable($dir_media)) {
                 $_ = echo_failed();
                 $errors += 1;
             } else {
@@ -187,25 +178,24 @@ if (!$isWriteable) {
 echo p($_ . lang('checking_if_config_exist_and_writable'));
 
 echo sprintf(
-    '<p>%s %s <strong>%s%s </strong></p>'
-    , echo_ok()
-    , lang('checking_sql_version')
-    , lang('sql_version_is')
-    , $modx->db->getVersion()
+    '<p>%s %s <strong>%s%s </strong></p>',
+    echo_ok(),
+    lang('checking_sql_version'),
+    lang('sql_version_is'),
+    $modx->db->getVersion()
 );
 
 // Version and strict mode check end
 
 // andrazk 20070416 - add install flag and disable manager login
-// assets/cache writable?
 
-if (is_writable('../assets/cache')) {
+if (is_writable(MODX_CACHE_PATH)) {
     // make an attempt to create the file
-    file_put_contents(MODX_BASE_PATH . 'assets/cache/installProc.inc.php', '<?php $installStartTime = ' . time() . '; ?>');
+    file_put_contents(MODX_CACHE_PATH . 'installProc.inc.php', '<?php $installStartTime = ' . time() . '; ?>');
 }
 
 if ($errors > 0) {
-    ?>
+?>
     <p>
         <?php
         echo '<strong>' . lang('setup_cannot_continue') . '</strong>';
@@ -222,7 +212,7 @@ if ($errors > 0) {
         echo lang('visit_forum');
         ?>
     </p>
-    <?php
+<?php
 }
 
 echo p('&nbsp;');
@@ -232,12 +222,12 @@ $nextButton = $errors ? lang('retry') : lang('install');
 $nextVisibility = $errors > 0 || $chkagree ? 'visible' : 'hidden';
 $agreeToggle = $errors > 0 ? '' : " onclick=\"if(document.getElementById('chkagree').checked){document.getElementById('nextbutton').style.visibility='visible';}else{document.getElementById('nextbutton').style.visibility='hidden';}\"";
 ?>
-    <form id="install" action="index.php" method="POST">
-        <div>
-            <input type="hidden" value="<?php echo $nextAction; ?>" name="action"/>
-            <input type="hidden" value="1" name="options_selected"/>
-            <input type="hidden" name="prev_action" value="summary"/>
-        </div>
+<form id="install" action="index.php" method="POST">
+    <div>
+        <input type="hidden" value="<?php echo $nextAction; ?>" name="action" />
+        <input type="hidden" value="1" name="options_selected" />
+        <input type="hidden" name="prev_action" value="summary" />
+    </div>
 
         <h2><?php echo lang('agree_to_terms'); ?></h2>
         <p>
@@ -279,17 +269,24 @@ function echo_failed($msg = NULL)
 
 function mkd($path)
 {
+    $rs = false;
     if (!is_dir($path)) {
-        $rs = @mkdir($path, 0777, true);
+        $rs = mkdir($path, 0777, true);
         if ($rs) {
-            $rs = @chmod($path, 0777);
+            chmod($path, 0777);
+            clearstatcache(); // ディレクトリ作成後のキャッシュをクリア
         }
     }
 
     if (!is_file($path . '/index.html')) {
-        $rs = @file_put_contents($path . '/index.html', '');
-        if ($rs) @chmod($path . '/index.html', 0666);
-        if (!is_writable($path . '/index.html')) echo echo_failed($path);
+        $rs = file_put_contents($path . '/index.html', '');
+        if ($rs) {
+            chmod($path . '/index.html', 0666);
+            clearstatcache(); // ファイル作成後のキャッシュをクリア
+        }
+        if (!is_writable($path . '/index.html')) {
+            echo echo_failed($path); // エラーメッセージを改善するために、エラー抑制を削除
+        }
     }
 
     return $rs;

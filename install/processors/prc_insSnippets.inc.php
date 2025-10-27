@@ -13,10 +13,10 @@ foreach ($tplSnippets as $k => $tplInfo) {
 
     if (!is_file($tplInfo['tpl_file_path'])) {
         echo ng($tplInfo['name'], sprintf(
-            "%s '%s' %s"
-            , lang('unable_install_snippet')
-            , $tplInfo['tpl_file_path']
-            , lang('not_found')
+            "%s '%s' %s",
+            lang('unable_install_snippet'),
+            $tplInfo['tpl_file_path'],
+            lang('not_found')
         ));
         continue;
     }
@@ -42,8 +42,8 @@ foreach ($tplSnippets as $k => $tplInfo) {
         echo ok($tplInfo['name'], lang('installed'));
         continue;
     }
-    $props = propUpdate($tplInfo['properties'], $dbv_snippet->properties);
-    if (!@ db()->update($f, '[+prefix+]site_snippets', "name='" . db()->escape($tplInfo['name']) . "'")) {
+    $f['properties'] = propUpdate($tplInfo['properties'], $dbv_snippet->properties);
+    if (!db()->update(db()->escape($f), '[+prefix+]site_snippets', "name='" . db()->escape($tplInfo['name']) . "'")) {
         $errors += 1;
         showError();
         return;

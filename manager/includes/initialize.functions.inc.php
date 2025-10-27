@@ -4,20 +4,19 @@ function startCMSSession()
 {
     global $site_sessionname;
 
-    $site_sessionname = 'evo' . substr(easy_hash(__FILE__), 0, 7);
-    session_name($site_sessionname);
-    init::session_set_cookie_params();
-    session_start();
+    if (session_status() == PHP_SESSION_NONE) {
+        $site_sessionname = 'evo' . substr(easy_hash(__FILE__), 0, 7);
+        session_name($site_sessionname);
+        init::session_set_cookie_params();
+        session_start();
+    }
     if (sessionv('evo_sid_hash') !== md5(session_id())) {
         session_regenerate_id(true);
         $_SESSION['evo_sid_hash'] = md5(session_id());
     }
     if (sessionv('mgrValidated') || sessionv('webValidated')) {
-        // init::setcookie(init::cookieExpiration());
         init::set_session_create_time();
-        return;
     }
-    // init::setcookie(0);
 }
 
 function set_parser_mode()
@@ -61,62 +60,21 @@ class init
     {
         $options += [
             'lifetime' => 3600 * 24 * 30,
-            'path' => MODX_BASE_URL,
-            'domain' => '',
-            'secure' => init::is_ssl() ? true : false,
+            'path'     => MODX_BASE_URL,
+            'domain'   => '',
+            'secure'   => init::is_ssl() ? true : false,
             'httponly' => true,
             'samesite' => 'Lax'
         ];
-        if (70300 <= PHP_VERSION_ID) {
-            session_set_cookie_params($options);
-        } else {
-            session_set_cookie_params(
-                $options['lifetime']
-                , $options['path'] . '; SameSite=Lax'
-                , ''
-                , $options['secure']
-                , $options['httponly']
-            );
-        }
-
-
-    }
-
-    public static function setcookie($expires)
-    {
-        global $site_sessionname;
-        if (70300 <= PHP_VERSION_ID) {
-            setcookie(
-                $site_sessionname
-                , session_id()
-                , [
-                    'expires' => $expires,
-                    'path' => MODX_BASE_URL,
-                    'secure' => init::is_ssl() ? true : false,
-                    'domain' => init::get_host_name(),
-                    'httponly' => true,
-                    'samesite' => 'Lax',
-                ]
-            );
-            return;
-        }
-        setcookie(
-            $site_sessionname
-            , session_id()
-            , $expires
-            , MODX_BASE_URL . '; SameSite=Lax'
-            , ''
-            , init::is_ssl() ? true : false
-            , true
-        );
+        session_set_cookie_params($options);
     }
 
     public static function get_base_path()
     {
         return str_replace(
-            ['\\', 'manager/includes/initialize.functions.inc.php']
-            , ['/', '']
-            , __FILE__
+            ['\\', 'manager/includes/initialize.functions.inc.php'],
+            ['/', ''],
+            __FILE__
         );
     }
 
@@ -171,10 +129,10 @@ class init
     public static function get_site_url($base_url)
     {
         return sprintf(
-            '%s%s%s/'
-            , static::is_ssl() ? 'https://' : 'http://'
-            , static::get_host_name()
-            , rtrim($base_url, '/')
+            '%s%s%s/',
+            static::is_ssl() ? 'https://' : 'http://',
+            static::get_host_name(),
+            rtrim($base_url, '/')
         );
     }
 
@@ -200,13 +158,14 @@ class init
             return;
         }
         $_SERVER['DOCUMENT_ROOT'] = str_replace(
-                $_SERVER['PATH_INFO']
-                , ''
-                , str_replace(
-                    '\\'
-                    , '/'
-                    , serverv('PATH_TRANSLATED'))
-            ) . '/';
+            $_SERVER['PATH_INFO'],
+            '',
+            str_replace(
+                '\\',
+                '/',
+                serverv('PATH_TRANSLATED')
+            )
+        ) . '/';
     }
 
     public static function fix_script_name()
@@ -240,13 +199,13 @@ class init
 
     public static function fix_server_addr()
     {
-        if (!isset($_SERVER['SERVER_ADDR']) && isset($_SERVER['LOCAL_ADDR'])) {
-            $_SERVER['SERVER_ADDR'] = $_SERVER['LOCAL_ADDR'];
+        if (!serverv('SERVER_ADDR') && serverv('LOCAL_ADDR')) {
+            $_SERVER['SERVER_ADDR'] = serverv('LOCAL_ADDR');
         }
-        if (isset($_SERVER['HTTP_X_REMOTE_ADDR'])) {
-            $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_X_REMOTE_ADDR'];
+        if (serverv('HTTP_X_REMOTE_ADDR')) {
+            $_SERVER['REMOTE_ADDR'] = serverv('HTTP_X_REMOTE_ADDR');
         }
-        if ($_SERVER['REMOTE_ADDR'] === '::1') {
+        if (serverv('REMOTE_ADDR') === '::1') {
             $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         }
     }
@@ -304,10 +263,10 @@ class init
     {
         $lifetime = sessionv(
             sprintf(
-                'modx.%s.session.cookie.lifetime'
-                , sessionv('mgrValidated') ? 'mgr' : 'web'
-            )
-            , 0
+                'modx.%s.session.cookie.lifetime',
+                sessionv('mgrValidated') ? 'mgr' : 'web'
+            ),
+            0
         );
         if (!preg_match('@^[1-9][0-9]+$@', $lifetime)) {
             return 0;

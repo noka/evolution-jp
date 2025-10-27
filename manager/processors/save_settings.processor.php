@@ -24,6 +24,7 @@ if (formv('reset_template')) {
 
 cleanup_tv();
 fix_pulishedon();
+repairDocs();
 evo()->clearCache();
 setPermission();
 header("Location: index.php?a=7&r=9");
@@ -39,9 +40,6 @@ function setPermission()
     }
     if (!is_dir(formv('rb_base_dir') . 'media')) {
         mkd(formv('rb_base_dir') . 'media');
-    }
-    if (!is_dir(formv('rb_base_dir') . 'flash')) {
-        mkd(formv('rb_base_dir') . 'flash');
     }
     if (!is_dir(MODX_BASE_PATH . 'temp/export')) {
         mkd(MODX_BASE_PATH . 'temp/export');
@@ -277,5 +275,13 @@ function fix_pulishedon() {
                 request_time()
             )
         ]
+    );
+}
+
+function repairDocs() {
+    db()->update(
+        'editedon=createdon',
+        '[+prefix+]site_content',
+        'editedon=0'
     );
 }

@@ -131,8 +131,6 @@ $_lang["configcheck_notok"] = 'One or more configuration details didn\'t check o
 $_lang["configcheck_ok"] = 'Check passed OK - no warnings to report.';
 $_lang["configcheck_php_gdzip"] = 'GD and/or Zip PHP extensions not found';
 $_lang["configcheck_php_gdzip_msg"] = 'MODX needs the GD and Zip extension enabled for PHP. While MODX will work without them, you will not be able to take full advantage of the built-in File Manager, Image Editor or Captcha for logins.';
-$_lang["configcheck_register_globals"] = 'register_globals is set to ON in your php.ini configuration file';
-$_lang["configcheck_register_globals_msg"] = 'This configuration makes your site much more susceptible to Cross Site Scripting (XSS) attacks. You should speak to your host about what you can do to disable this setting.';
 $_lang["configcheck_title"] = 'Configuration check';
 $_lang["configcheck_templateswitcher_present"] = 'TemplateSwitcher Plugin detected';
 $_lang["configcheck_templateswitcher_present_delete"] = '<a href="javascript:deleteTemplateSwitcher();">Delete TemplateSwitcher</a>';
@@ -648,11 +646,11 @@ $_lang["public"] = 'Public';
 $_lang["publish_date"] = 'Publish Date';
 $_lang["publish_events"] = 'Publish Events';
 $_lang["publish_resource"] = 'Publish Resource';
-$_lang["rb_base_dir_message"] = 'Enter the physical path to the File Browser directory. This setting is usually automatically generated. If you\'re using IIS, however, MODX may not be able to work the path out on its own, causing the File Browser to show an error. In that case, you can enter the path to the images directory here (the path as you\'d see it in Windows Explorer). <b>NOTE:</b> The File Browser directory must contain the subfolders images, files, flash and media in order for the file browser to function correctly.';
+$_lang["rb_base_dir_message"] = 'Enter the physical path to the File Browser directory. This setting is usually automatically generated. If you\'re using IIS, however, MODX may not be able to work the path out on its own, causing the File Browser to show an error. In that case, you can enter the path to the images directory here (the path as you\'d see it in Windows Explorer). <b>NOTE:</b> The File Browser directory must contain the subfolders images, files and media in order for the file browser to function correctly.';
 $_lang["rb_base_dir_title"] = 'File base path';
 $_lang["rb_base_url_message"] = 'Enter the virtual path to files directory. This setting is usually automatically generated. If you\'re using IIS, however, MODX may not be able to work the URL out on it\'s own, causing the File Browser to show an error. In that case, you can enter the URL to the images directory here (the URL as you\'d enter it on Internet Explorer).';
 $_lang["rb_base_url_title"] = 'File Browser URL';
-$_lang["rb_message"] = 'Select yes to enable the File Browser. This will allow your users to browse and upload files such as images, flash and media files on the server.';
+$_lang["rb_message"] = 'Select yes to enable the File Browser. This will allow your users to browse and upload files such as images and media files on the server.';
 $_lang["rb_title"] = 'Enable File Browser';
 $_lang["rb_webuser_message"] = 'Do you want to allow a web user the ability to use the file browser? <b>WARNING:</b> Allowing web users the use of the file browser exposes the files available to manager users.  Only use this option for trusted web users.';
 $_lang["rb_webuser_title"] = 'Web Users?';
@@ -850,7 +848,7 @@ $_lang["settings_page_settings"] = 'Settings';
 $_lang["settings_photo"] = 'Photo';
 $_lang["settings_properties"] = 'Properties';
 $_lang["settings_site"] = 'Site';
-$_lang["settings_strip_image_paths_message"] = 'If this is set to \'No\', MODX  will write file browser src\'s (images, files, flash, etc.) as absolute URLs. Relative URLs are helpful should you wish to move your MODX install, e.g., from a staging site to a production site. If you have no idea what this means, it\'s best just to leave it set to \'Yes\'.';
+$_lang["settings_strip_image_paths_message"] = 'If this is set to \'No\', MODX  will write file browser src\'s (images, files, etc.) as absolute URLs. Relative URLs are helpful should you wish to move your MODX install, e.g., from a staging site to a production site. If you have no idea what this means, it\'s best just to leave it set to \'Yes\'.';
 $_lang["settings_strip_image_paths_title"] = 'Rewrite browser paths?';
 $_lang["settings_templvars"] = 'Template Variables';
 $_lang["settings_title"] = 'System configuration';
@@ -974,8 +972,6 @@ $_lang["upload_maxsize_message"] = 'Enter the maximum file size that can be uplo
 $_lang["upload_maxsize_title"] = 'Maximum upload size';
 $_lang["uploadable_files_message"] = 'Enter a list of files that can be uploaded into \'assets/files/\' using the File Browser. Please enter the extensions for the filetypes, separated by commas.';
 $_lang["uploadable_files_title"] = 'Uploadable File Types';
-$_lang["uploadable_flash_message"] = 'Enter a list of files that can be uploaded into \'assets/flash/\' using the File Browser. Please enter the extensions for the flash types, separated by commas.';
-$_lang["uploadable_flash_title"] = 'Uploadable Flash Types';
 $_lang["uploadable_images_message"] = 'Enter a list of files that can be uploaded into \'assets/images/\' using the File Browser. Please enter the extensions for the image types, separated by commas.';
 $_lang["uploadable_images_title"] = 'Uploadable Image Types';
 $_lang["uploadable_media_message"] = 'Enter a list of files that can be uploaded into \'assets/media/\' using the File Browser. Please enter the extensions for the media types, separated by commas.';
@@ -1205,10 +1201,6 @@ $_lang["a17_image_limit_width_message"] = 'Reduce the width of the image to uplo
 $_lang["enable_bindings_title"] = 'Enable @Bindings commands';
 $_lang['enable_bindings_message'] = 'Enable <a href="http://www.google.com/cse?cx=007286147079563201032%3Aigbcdgg0jyo&q=Bindings" target="_blank">@Bindings commands</a>. Describe any command in the entry field (template variable) on the contribution screen and carry out this function. When manage a site in plural members because the practice of the PHP sentence is possible, attention is necessary for the use of this function.';
 
-$_lang["a83_mode_title"] = 'Generate mode';
-$_lang["a83_mode_direct"] = 'Direct parse';
-$_lang["a83_mode_crawl"] = 'Crawl (legacy mode)';
-
 $_lang["update"] = 'Save';
 
 $_lang["a17_manager_inline_style_title"] = 'Append style';
@@ -1240,6 +1232,9 @@ $_lang["topmenu_items_title"] = 'Top menu structure';
 $_lang["topmenu_items_message"] = 'Top menu structure in the manager interface';
 
 $_lang["open"] = 'Open';
+
+$_lang["manager_docs_orderby_title"] = 'Resource list order';
+$_lang["manager_docs_orderby_message"] = 'Set the order of the <a href="index.php?a=120">resource list</a>.';
 
 $_lang["tree_pane_open_default_title"] = 'Tree pane default';
 $_lang["tree_pane_open_default_message"] = 'Tree pane default';

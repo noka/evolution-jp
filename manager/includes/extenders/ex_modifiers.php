@@ -9,6 +9,7 @@ $this->filter = new MODIFIERS;
 class MODIFIERS
 {
 
+    public $documentObject;
     public $placeholders = [];
     public $vars = [];
     public $bt;
@@ -392,7 +393,7 @@ class MODIFIERS
             $mdf_path = false;
         }
 
-        if (!$mdf_path) {
+        if (empty($mdf_path)) {
             return false;
         }
 
@@ -885,7 +886,8 @@ class MODIFIERS
             case 'money_format':
                 setlocale(LC_MONETARY, setlocale(LC_TIME, 0));
                 if ($value !== '') {
-                    return money_format($opt, (float)$value);
+                    $fmt = new NumberFormatter('ja_JP', NumberFormatter::CURRENCY);
+                    return $fmt->format((float)$value);
                 }
                 break;
             case 'tobool':
@@ -898,24 +900,17 @@ class MODIFIERS
             case 'br2nl':
                 return preg_replace('@<br[\s/]*>@i', "\n", $value);
             case 'nl2br':
-                if (version_compare(PHP_VERSION, '5.3.0', '<')) {
-                    return nl2br($value);
-                }
                 if ($opt !== '') {
                     $opt = strtolower(trim($opt));
                     if ($opt === 'false') {
                         $opt = false;
-                    } elseif ($opt === '0') {
-                        $opt = false;
-                    } else {
-                        $opt = true;
                     }
-                } elseif (evo()->config('mce_element_format') === 'html') {
-                    $opt = false;
-                } else {
-                    $opt = true;
+                    return nl2br($value, (boolean) $opt);
                 }
-                return nl2br($value, $opt);
+                return nl2br(
+                    $value,
+                    (evo()->config('mce_element_format') === 'html')
+                );
             case 'ltrim':
             case 'rtrim':
             case 'trim': // ref http://mblo.info/modifiers/custom-modifiers/rtrim_opt.html

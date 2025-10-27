@@ -302,7 +302,7 @@ function propUpdate($new, $old)
     foreach ($returnArr as $k => $v) {
         $return .= sprintf('&%s=%s ', $k, $v);
     }
-    return db()->escape($return);
+    return $return;
 }
 
 function getCreateDbCategory($category)
@@ -350,7 +350,6 @@ function isUpGradeable()
         return sessionv('is_upgradeable');
     }
 
-    sessionv('*is_upgradeable', 0);
 
     $dbase = null;
     $database_server = null;
@@ -361,6 +360,7 @@ function isUpGradeable()
     include($conf_path);
 
     if (!$dbase) {
+    	sessionv('*is_upgradeable', 0);
         return 0;
     }
 
@@ -386,6 +386,7 @@ function isUpGradeable()
         sessionv('*is_upgradeable', 1);
         return 1;
     }
+    sessionv('*is_upgradeable', 0);
     return 0;
 }
 
@@ -518,4 +519,41 @@ function withSample($installset)
         return false;
     }
     return true;
+}
+
+function convert2utf8mb4() {
+    include MODX_SETUP_PATH . 'convert2utf8mb4.php';
+    $convert = new convert2utf8mb4();
+    if ($convert->isUtf8mb4Configured()) {
+        return;
+    }
+    if (!$convert->isAvailable()) {
+        echo "<p>'utf8mb4 is not available.'</p>";
+        return;
+    }
+
+    $charset = $convert->getDefaultCharset();
+    if (!$charset) {
+        echo "<p>'Database default charset is not available.'</p>";
+        return;
+    }
+
+    echo "<p>tableのcollationをutf8mb4_general_ciに変換します。</p>";
+    if ($charset !== 'utf8mb4') {
+        $convert->convertDb();
+    }
+    $convert->convertDb();
+    
+    $count = $convert->convertTablesWithPrefix(sessionv('table_prefix', 'modx_'));
+    if ($count) {
+        echo sprintf(
+            "<p>Database and tables collation have been changed to utf8mb4_general_ci. %d tables have been converted.</p>",
+            $count
+        );
+    } else {
+        echo "<p>utf8mb4_general_ciに変換されたテーブルはありません。</p>";
+    }
+
+    $convert->updateConfigIncPhp();
+    echo "<p>config.inc.php has been updated.</p>";
 }

@@ -35,13 +35,14 @@ $sqlParser->managerlanguage = sessionv('managerlanguage');
 
 // install/update database
 
-if (sessionv('is_upgradeable') && db()->tableExists('[+prefix+]site_revision')) {
-    if (!db()->fieldExists('elmid', '[+prefix+]site_revision')) {
+if (sessionv('is_upgradeable')) {
+    if (db()->tableExists('[+prefix+]site_revision') && !db()->fieldExists('elmid', '[+prefix+]site_revision')) {
         db()->query(
             str_replace(
-                '[+prefix+]'
-                , sessionv('table_prefix')
-                , 'DROP TABLE IF EXISTS `[+prefix+]site_revision`')
+                '[+prefix+]',
+                sessionv('table_prefix'),
+                'DROP TABLE IF EXISTS `[+prefix+]site_revision`'
+            )
         );
     }
 }
@@ -58,6 +59,11 @@ if (!sessionv('is_upgradeable')) {
 }
 
 $sqlParser->intoDB('fix_settings.sql');
+
+if (sessionv('is_upgradeable')) {
+    convert2utf8mb4();
+}
+
 // display database results
 if ($sqlParser->installFailed == true) {
     $errors += 1;
@@ -172,16 +178,14 @@ if ($callBackFnc != '') $callBackFnc ($sqlParser);
 // Setup the MODX API -- needed for the cache processor
 // initiate a new document parser
 
-$cache_path = MODX_BASE_PATH . 'assets/cache/';
-
-$files = glob($cache_path . "*.idx.php");
+$files = glob(MODX_CACHE_PATH . "*.idx.php");
 foreach ($files as $file) {
     @unlink($file);
 }
 
 // try to chmod the cache go-rwx (for suexeced php)
-@chmod($cache_path . "siteCache.idx.php", 0600);
-@chmod($cache_path . "basicConfig.php", 0600);
+@chmod(MODX_CACHE_PATH . "siteCache.idx.php", 0644);
+@chmod(MODX_CACHE_PATH . "basicConfig.php", 0644);
 
 evo()->clearCache(); // always empty cache after install
 
@@ -189,10 +193,16 @@ evo()->clearCache(); // always empty cache after install
 db()->truncate('[+prefix+]active_users');
 
 // andrazk 20070416 - release manager access
-if (is_file($cache_path . "installProc.inc.php")) {
-    @chmod($cache_path . "installProc.inc.php", 0755);
-    unlink($cache_path . "installProc.inc.php");
+if (is_file(MODX_CACHE_PATH . "installProc.inc.php")) {
+    @chmod(MODX_CACHE_PATH . "installProc.inc.php", 0755);
+    unlink(MODX_CACHE_PATH . "installProc.inc.php");
 }
+
+// assets/cacheディレクトリが存在する場合は、サブディレクトリも含めて全て削除
+if (is_dir(MODX_BASE_PATH . 'assets/cache')) {
+    deleteCacheDirectory(MODX_BASE_PATH . 'assets/cache');
+}
+
 // setup completed!
 echo "<p><b>" . lang('installation_successful') . "</b></p>";
 echo "<p>" . lang('to_log_into_content_manager') . "</p>";
@@ -207,6 +217,23 @@ if (sessionv('is_upgradeable') == 0) {
 echo '</p>';
 
 $_SESSION = array();
+
+function deleteCacheDirectory($cachePath) {
+    if (!is_dir($cachePath)) {
+        return;
+    }
+
+    $dir = new RecursiveDirectoryIterator($cachePath, FilesystemIterator::SKIP_DOTS);
+    $files = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ($files as $file) {
+        if ($file->isDir()) {
+            rmdir($file->getRealPath());
+        } else {
+            unlink($file->getRealPath());
+        }
+    }
+    rmdir($cachePath);
+}
 
 function ok($name, $msg)
 {

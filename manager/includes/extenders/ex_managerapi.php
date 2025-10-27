@@ -49,14 +49,16 @@ class ManagerAPI
     // check for saved form
     function hasFormValues()
     {
-        if (isset($_SESSION['mgrFormValueId']) && sessionv('mgrFormValues')) {
-            if ($this->action == $_SESSION['mgrFormValueId'] && is_array($_SESSION['mgrFormValues'])) {
-                return true;
-            }
-
-            $this->clearSavedFormValues();
+        if (!isset($_SESSION['mgrFormValueId']) || !sessionv('mgrFormValues')) {
+            return false;
         }
-        return false;
+
+        if ($this->action != sessionv('mgrFormValueId') || !is_array($_SESSION['mgrFormValues'])) {
+            $this->clearSavedFormValues();
+            return false;
+        }
+
+        return true;
     }
 
     // saved form post from $_POST
@@ -373,52 +375,6 @@ class ManagerAPI
                 , strpos($user->password, '>')
             )
         );
-    }
-
-    function checkHashAlgorithm($algorithm = '')
-    {
-        if (!$algorithm) {
-            return '';
-        }
-
-        switch ($algorithm) {
-            case 'BLOWFISH_Y':
-                if (defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH == 1) {
-                    if (version_compare('5.3.7', PHP_VERSION) <= 0) {
-                        $result = true;
-                    }
-                }
-                break;
-            case 'BLOWFISH_A':
-                if (defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH == 1) {
-                    $result = true;
-                }
-                break;
-            case 'SHA512':
-                if (defined('CRYPT_SHA512') && CRYPT_SHA512 == 1) {
-                    $result = true;
-                }
-                break;
-            case 'SHA256':
-                if (defined('CRYPT_SHA256') && CRYPT_SHA256 == 1) {
-                    $result = true;
-                }
-                break;
-            case 'MD5':
-                if (defined('CRYPT_MD5') && CRYPT_MD5 == 1 && PHP_VERSION !== '5.3.7') {
-                    $result = true;
-                }
-                break;
-            case 'UNCRYPT':
-                $result = true;
-                break;
-        }
-
-        if (!isset($result)) {
-            $result = false;
-        }
-
-        return $result;
     }
 
     function setView($action)
@@ -935,30 +891,35 @@ class ManagerAPI
         return $modx->user_allowed_docs;
     }
 
-    function getUploadMaxsize()
+    public function getUploadMaxsize()
     {
         return min(
-            $this->byte(ini_get('upload_max_filesize'))
-            , $this->byte(ini_get('post_max_size'))
-            , $this->byte(ini_get('memory_limit'))
+            $this->convertToBytes(ini_get('upload_max_filesize')),
+            $this->convertToBytes(ini_get('post_max_size')),
+            $this->convertToBytes(ini_get('memory_limit'))
         );
     }
 
-    function byte($value)
+    private function convertToBytes($input)
     {
-        $substr = substr($value, -1);
-        $units = ['B', 'K', 'M', 'T'];
-        if (!in_array($substr, $units)) {
-            return $value;
+        $unit = strtoupper(substr($input, -1));
+        $numericValue = substr($input, 0, -1);
+        $validUnits = ['B', 'K', 'M', 'T'];
+
+        if (!in_array($unit, $validUnits)) {
+            return $numericValue;
         }
-        $size = $value;
-        foreach ($units as $unit) {
-            if ($unit === $substr) {
-                return $size;
+
+        $bytes = $numericValue;
+
+        foreach ($validUnits as $validUnit) {
+            if ($validUnit === $unit) {
+                return $bytes;
             }
-            $size = $size * 1024;
+            $bytes *= 1024;
         }
-        return $size;
+
+        return $bytes;
     }
 
     function getTplModule()

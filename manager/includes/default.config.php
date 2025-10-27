@@ -52,7 +52,7 @@ $default_config = [
     'search_default' => '1',
     'send_errormail' => '3',
     'server_offset_time' => '0',
-    'server_protocol' => 'http',
+    'server_protocol' => 'https',
     'session.cookie.lifetime' => '604800',
     'site_name' => 'My MODX Site',
     'site_slogan' => 'ここにサイトのスローガン文を表示します。',
@@ -67,7 +67,6 @@ $default_config = [
     'tree_show_protected' => '0',
     'udperms_allowroot' => '0',
     'upload_files' => 'aac,css,csv,cache,doc,docx,gz,gzip,htaccess,htm,html,js,ods,odp,odt,pdf,ppt,pptx,rar,tar,tgz,txt,xls,xlsx,xml,z,zip',
-    'upload_flash' => 'fla,flv,swf',
     'upload_images' => 'bmp,ico,gif,jpeg,jpg,png,svg,psd,tif,tiff',
     'upload_maxsize' => '',
     'upload_media' => 'au,avi,mp3,mp4,mpeg,mpg,wav,wmv',
@@ -98,6 +97,7 @@ $default_config = [
     'enable_draft' => '0',
     'automatic_optimize' => '1',
     'sanitize_gpc' => 1,
+    'manager_docs_orderby' => 'isfolder desc, publishedon desc, editedon desc, id desc',
 ];
 
 if (getv('a') !== '17') {

@@ -16,6 +16,7 @@ class DBAPI
     public $connection_method;
     private $rs;
     private $rawQuery = false;
+    private $dbconnectionmethod;
 
     /**
      * @name:  DBAPI
@@ -215,7 +216,7 @@ class DBAPI
      * @desc:  Mainly for internal use.
      * Developers should use select, update, insert, delete where possible
      */
-    public function query($sql, $watchError = true)
+    public function exec($sql, $watchError = true)
     {
         global $modx;
         if ($this->rawQuery) {
@@ -288,6 +289,11 @@ class DBAPI
         }
         $modx->executedQueries = evo()->executedQueries + 1;
         return $result;
+    }
+
+    public function query($sql, $watchError = true)
+    {
+        return $this->exec($sql, $watchError);
     }
 
     public function lastQuery()
@@ -1127,7 +1133,7 @@ class DBAPI
      * @deprecated Change function name. tableExists() is recommended.
      */
     public function table_exists($table_name) {
-        return tableExists($table_name);
+        return $this->tableExists($table_name);
     }
 
     public function fieldExists($field_name, $table_name)
@@ -1187,7 +1193,7 @@ class DBAPI
             }
             return $row['Collation'];
         }
-        return 'utf8_general_ci';
+        return 'utf8mb4_general_ci';
     }
 
     public function _getFieldsStringFromArray($fields = [])

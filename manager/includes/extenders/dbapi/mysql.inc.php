@@ -74,9 +74,7 @@ class DBAPI
         }
 
         if (!$this->hostname || !$this->username) {
-            if (!$modx->setConfig()) {
-                return false;
-            }
+            return false;
         }
 
         if (substr(PHP_OS, 0, 3) === 'WIN' && $this->hostname === 'localhost') {
@@ -253,7 +251,7 @@ class DBAPI
                     $bt .= "{$function} - {$file}[{$line}]<br />";
                 }
                 $modx->dumpSQLCode[] = '<fieldset style="text-align:left">';
-                $modx->dumpSQLCode[] = '<legend>Query ' . ++$this->executedQueries . " - " . sprintf("%2.4f s",
+                $modx->dumpSQLCode[] = '<legend>Query ' . ++$modx->executedQueries . " - " . sprintf("%2.4f s",
                         $totaltime) . '</legend>';
                 $modx->dumpSQLCode[] = "{$sql}<br />{$bt}</fieldset>";
             }
@@ -382,22 +380,18 @@ class DBAPI
         return $this->__insert('REPLACE INTO', $fields, $intotable, $fromfields, $fromtable, $where, $limit);
     }
 
-    function save($fields, $table, $where = '')
+    public function save($fields, $table, $where = '')
     {
 
-        if ($where === '') {
-            $mode = 'insert';
-        } elseif ($this->getRecordCount($this->select('*', $table, $where)) == 0) {
-            $mode = 'insert';
-        } else {
-            $mode = 'update';
+        if (!$where) {
+            return $this->insert($fields, $table);
         }
 
-        if ($mode === 'insert') {
+        if (!$this->count($this->select('*', $table, $where))) {
             return $this->insert($fields, $table);
-        } else {
-            return $this->update($fields, $table, $where);
         }
+
+        return $this->update($fields, $table, $where);
     }
 
     private function __insert(
@@ -597,7 +591,7 @@ class DBAPI
         }
     }
 
-    function getRows($rs, $mode = 'assoc')
+    function getRows($rs, $mode = 'assoc', $where = '', $orderby = '', $limit = '')
     {
 
         if (is_string($rs)) {
@@ -666,7 +660,7 @@ class DBAPI
      * @desc:  returns the value from the first column in the set
      * @param: $rs - dataset or query string
      */
-    function getValue($rs, $from = '', $where = '')
+    function getValue($rs, $from = '', $where = '', $orderby = '', $limit = '')
     {
         if (is_string($rs)) {
             if ($from && $where) {
@@ -769,7 +763,7 @@ class DBAPI
      *  or
      *        $docs = $modx->db->getObjects("select * from modx_site_content left join ...");
      *
-     * @param type $sql_or_table
+     * @param string $sql_or_table
      * @param type $where
      * @param type $orderby
      * @param type $limit
@@ -1063,7 +1057,7 @@ class DBAPI
         $table = str_replace('[+prefix+]', $this->table_prefix, $table);
         $sql = sprintf("SHOW FULL COLUMNS FROM `%s`", $table);
         $rs = $this->query($sql);
-        $Collation = 'utf8_general_ci';
+        $Collation = 'utf8mb4_general_ci';
         while ($row = $this->getRow($rs)) {
             if ($row['Field'] == $field && isset($row['Collation'])) {
                 $Collation = $row['Collation'];

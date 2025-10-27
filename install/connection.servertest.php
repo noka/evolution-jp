@@ -1,6 +1,6 @@
 <?php
+include '../define-path.php';
 define('MODX_API_MODE', true);
-define('MODX_BASE_PATH', str_replace('\\', '/', dirname(__DIR__)) . '/');
 define('MODX_SETUP_PATH', MODX_BASE_PATH . 'install/');
 include_once(MODX_BASE_PATH . 'manager/includes/document.parser.class.inc.php');
 $modx = new DocumentParser;
@@ -38,7 +38,7 @@ $script = '<script>
     let isSelected;
 
 jQuery.each(characters, function (value, name) {
-    isSelected = (value === 'utf8_general_ci');
+    isSelected = (value === 'utf8mb4_general_ci');
     opt = jQuery('<option>')
         .val(value)
         .text(name)

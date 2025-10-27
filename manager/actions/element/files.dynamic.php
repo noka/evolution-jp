@@ -355,14 +355,12 @@ if (!is_readable($startpath)) {
         </div>
 
         <?php
-        if (((@ini_get("file_uploads") == true) || get_cfg_var("file_uploads") == 1) && is_writable($startpath)) {
-            @ini_set('upload_max_filesize', config('upload_maxsize')); // modified by raymond
+        if (is_writable($startpath)) {
             ?>
-
             <form name="upload" enctype="multipart/form-data" action="index.php" method="post">
                 <input
                     type="hidden" name="MAX_FILE_SIZE"
-                    value="<?= isset($upload_maxsize) ? $upload_maxsize : 3145728 ?>">
+                    value="<?= evo()->config('upload_maxsize', 32*1024*1024) ?>">
                 <input type="hidden" name="a" value="31">
                 <input type="hidden" name="path" value="<?= $startpath ?>">
 
@@ -421,6 +419,7 @@ if (anyv('mode') === 'save' || anyv('mode') === 'view') {
 
             ?>
 
+<?php if (anyv('mode') === 'save') { ?>
             <form action="index.php" method="post" name="editFile">
                 <input type="hidden" name="a" value="31"/>
                 <input type="hidden" name="mode" value="save"/>
@@ -434,6 +433,11 @@ if (anyv('mode') === 'save' || anyv('mode') === 'view') {
                     </tr>
                 </table>
             </form>
+<?php } else { ?>
+    <div style="background-color:#fcfcfc;border: 1px solid #ccc; padding:10px 20px;">
+    <?= '<pre>' . $ent_buffer . '</pre>' ?>
+    </div>
+<?php } ?>
         </div>
     </div>
     <?php
@@ -460,7 +464,7 @@ function ls($curpath)
     );
     $uploadablefiles = add_dot(uploadablefiles());
     $inlineviewablefiles = add_dot(
-        explode(',', 'txt,php,tpl,html,htm,xml,js,css,pageCache,htaccess' . config('alias_suffix'))
+        explode(',', 'txt,php,tpl,html,htm,xml,js,css,pageCache,htaccess,sample' . config('alias_suffix'))
     );
     $viewablefiles = add_dot(
         explode(',', 'jpg,gif,png,ico')
@@ -804,7 +808,7 @@ function fileupload()
     }
 
     // this seems to be an upload action.
-    $path = $modx->config['site_url'] . substr($startpath, strlen(config('filemanager_path')));
+    $path = MODX_SITE_URL . substr($startpath, strlen(config('filemanager_path')));
     $path = rtrim($path, '/') . '/' . $userfile['name'];
     $msg .= $path;
     if ($userfile['error'] == 0) {
@@ -940,7 +944,7 @@ function proteted_path()
         $proteted_path[] = base_path() . 'assets/modules';
     }
     if (!evo()->hasPermission('empty_cache')) {
-        $proteted_path[] = base_path() . 'assets/cache';
+        $proteted_path[] = rtrim(MODX_CACHE_PATH, '/');
     }
     if (!evo()->hasPermission('import_static')) {
         $proteted_path[] = base_path() . 'temp/import';
@@ -958,7 +962,6 @@ function uploadablefiles()
     return array_merge(
         explode(',', config('upload_files', array())),
         explode(',', config('upload_images', array())),
-        explode(',', config('upload_media', array())),
-        explode(',', config('upload_flash', array()))
+        explode(',', config('upload_media', array()))
     );
 }
